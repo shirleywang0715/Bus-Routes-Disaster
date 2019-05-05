@@ -1,0 +1,59 @@
+1. All routes that have ever been affected
+SELECT DISTINCT BusRoutes.BusRoutesID,Disaster.DisasterType
+FROM BusRoutes
+JOIN LinkPoint, BusStop,Disaster
+ON BusRoutes.BusRoutesID=LinkPoint.BusRoutesID 
+AND BusStop.BusStopID=LinkPoint.BusStopID
+WHERE BusRoutes.BusRoutesDate=Disaster.DisasterDate
+
+
+
+2. All routes that have never been affected
+SELECT DISTINCT BusRoutes.BusRoutesID
+FROM LinkPoint JOIN BusRoutes USING (BusRoutesID)
+WHERE LinkPoint.BusRoutesID NOT IN
+(SELECT DISTINCT LinkPoint.BusRoutesID
+FROM LinkPoint JOIN Disaster,BusRoutes,BusStop
+ON LinkPoint.BusRoutesID=BusRoutes.BusRoutesID
+AND LinkPoint.BusStopID=BusStop.BusStopID
+AND Disaster.AreaID=BusStop.AreaID)
+
+
+
+3.The 2 routes that have been affected the most (Just have 7 bus routes in the database)
+SELECT COUNT(BusRoutes.BusRoutesID) AS 'Num of Disaster',BusRoutes.BusRoutesID
+FROM BusRoutes
+JOIN LinkPoint, Disaster,BusStop
+ON BusRoutes.BusRoutesID=LinkPoint.BusRoutesID 
+AND BusStop.AreaID=Disaster.AreaID
+AND LinkPoint.BusStopID=BusStop.BusStopID
+WHERE BusRoutes.BusRoutesDate=Disaster.DisasterDate
+GROUP BY BusRoutes.BusRoutesID
+ORDER BY COUNT(*) DESC
+LIMIT  2;
+
+
+
+4.The 3 routes that have been affected the least (Just have 7 bus routes in the database)
+SELECT COUNT(BusRoutes.BusRoutesID) AS 'Num of Disaster',BusRoutes.BusRoutesID
+FROM BusRoutes
+JOIN LinkPoint, Disaster,BusStop
+ON BusRoutes.BusRoutesID=LinkPoint.BusRoutesID 
+AND BusStop.AreaID=Disaster.AreaID
+AND LinkPoint.BusStopID=BusStop.BusStopID
+WHERE BusRoutes.BusRoutesDate=Disaster.DisasterDate
+GROUP BY BusRoutes.BusRoutesID
+ORDER BY COUNT(*) ASC
+LIMIT  3;
+
+
+
+5.All routes have been affected in the last 5 years
+
+SELECT DISTINCT BusRoutes.BusRoutesID
+FROM BusRoutes
+JOIN LinkPoint, BusStop,Disaster
+ON BusRoutes.BusRoutesID=LinkPoint.BusRoutesID 
+AND BusStop.AreaID=Disaster.AreaID 
+AND LinkPoint.BusStopID=BusStop.BusStopID
+WHERE strftime('%Y','now') - BusRoutes.BusRoutesDate<=5
